@@ -7,4 +7,4 @@ services:
       context: .
       dockerfile: ./docker/dev/Dockerfile
     volumes:
-      - ".:dev/:rw"
+      - ./:/text-classifier

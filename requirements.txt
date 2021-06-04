@@ -1,5 +1,5 @@
-TensorFlow
-TFX
+tensorflow-gpu==2.5.0
+tfx==0.30.0
 numpy
 pandas
 jupyter

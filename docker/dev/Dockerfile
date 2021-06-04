@@ -1,7 +1,7 @@
 FROM tensorflow/tensorflow:2.5.0-gpu
 
-COPY . /dev
-WORKDIR /dev
+WORKDIR /text-classifier
+ADD ./requirements.txt .
 
-RUN ls
+RUN ls -a
 RUN pip install -r requirements.txt
