@@ -30,8 +30,15 @@ I wanted to create this project as a way to improve my skills in MLOps and build
 
 To develop/maintain code use the following command to start up the dev docker container.
 
-```docker run --gpus all -it --rm -p 8888:8888 -v $PWD:/text-classifier text-classifier_dev```
-```jupyter notebook --ip 0.0.0.0 --no-browser --allow-root```
+```
+docker run --gpus all -it --rm -p 8888:8888 -v $PWD:/text-classifier text-classifier_dev
+```
+
+Once the container is up and running use the following code to launch jupyter notebooks.
+
+```
+jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
+```
 
 <!-- ROADMAP -->
 
