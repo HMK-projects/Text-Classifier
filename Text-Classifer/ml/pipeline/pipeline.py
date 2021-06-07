@@ -20,6 +20,7 @@ This file defines TFX pipeline and various components in the pipeline.
 from typing import List, Optional, Text
 
 import tensorflow_model_analysis as tfma
+from tfx import v1 as tfx
 
 from tfx.components import CsvExampleGen
 from tfx.components import Evaluator
