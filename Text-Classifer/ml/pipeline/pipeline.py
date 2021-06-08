@@ -61,7 +61,6 @@ def create_pipeline(
   components = []
 
   # Brings data into the pipeline or otherwise joins/converts training data.
-  # TODO(step 2): Might use another ExampleGen class for your data.
   example_gen = CsvExampleGen(input_base=data_path)
   components.append(example_gen)
 
