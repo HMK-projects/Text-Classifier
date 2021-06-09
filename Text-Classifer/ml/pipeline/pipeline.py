@@ -53,105 +53,122 @@ def create_pipeline(
     eval_accuracy_threshold: float,
     serving_model_dir: Text,
     metadata_connection_config: Optional[
-        metadata_store_pb2.ConnectionConfig] = None,
+        metadata_store_pb2.ConnectionConfig
+    ] = None,
     beam_pipeline_args: Optional[List[Text]] = None,
 ) -> pipeline.Pipeline:
-  """Implements the penguin pipeline with TFX."""
+    """Implements the penguin pipeline with TFX."""
 
-  components = []
+    components = []
 
-  # Brings data into the pipeline or otherwise joins/converts training data.
-  example_gen = CsvExampleGen(input_base=data_path)
-  components.append(example_gen)
+    # Brings data into the pipeline or otherwise joins/converts training data.
+    example_gen = CsvExampleGen(input_base=data_path)
+    components.append(example_gen)
 
-  # Computes statistics over data for visualization and example validation.
-  statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
-  components.append(statistics_gen)
+    # Computes statistics over data for visualization and example validation.
+    statistics_gen = StatisticsGen(examples=example_gen.outputs["examples"])
+    components.append(statistics_gen)
 
-  # Generates schema based on statistics files.
-  schema_gen = SchemaGen(
-      statistics=statistics_gen.outputs['statistics'], infer_feature_shape=True)
-  components.append(schema_gen)
+    # Generates schema based on statistics files.
+    schema_gen = SchemaGen(
+        statistics=statistics_gen.outputs["statistics"],
+        infer_feature_shape=True,
+    )
+    components.append(schema_gen)
 
-  # Performs anomaly detection based on statistics and data schema.
-  example_validator = ExampleValidator(  # pylint: disable=unused-variable
-      statistics=statistics_gen.outputs['statistics'],
-      schema=schema_gen.outputs['schema'])
-  components.append(example_validator)
+    # Performs anomaly detection based on statistics and data schema.
+    example_validator = ExampleValidator(  # pylint: disable=unused-variable
+        statistics=statistics_gen.outputs["statistics"],
+        schema=schema_gen.outputs["schema"],
+    )
+    components.append(example_validator)
 
-  # Performs transformations and feature engineering in training and serving.
-  transform = Transform(  # pylint: disable=unused-variable
-      examples=example_gen.outputs['examples'],
-      schema=schema_gen.outputs['schema'],
-      preprocessing_fn=preprocessing_fn)
-  # TODO(step 3): Uncomment here to add Transform to the pipeline.
-  # components.append(transform)
+    # Performs transformations and feature engineering in training and serving.
+    transform = Transform(  # pylint: disable=unused-variable
+        examples=example_gen.outputs["examples"],
+        schema=schema_gen.outputs["schema"],
+        preprocessing_fn=preprocessing_fn,
+    )
+    # TODO(step 3): Uncomment here to add Transform to the pipeline.
+    # components.append(transform)
 
-  # Uses user-provided Python function that implements a model using Tensorflow.
-  trainer = Trainer(
-      run_fn=run_fn,
-      examples=example_gen.outputs['examples'],
-      # Use outputs of Transform as training inputs if Transform is used.
-      # examples=transform.outputs['transformed_examples'],
-      # transform_graph=transform.outputs['transform_graph'],
-      schema=schema_gen.outputs['schema'],
-      train_args=train_args,
-      eval_args=eval_args)
-  # TODO(step 4): Uncomment here to add Trainer to the pipeline.
-  # components.append(trainer)
+    # Uses user-provided Python function that implements a model using Tensorflow.
+    trainer = Trainer(
+        run_fn=run_fn,
+        examples=example_gen.outputs["examples"],
+        # Use outputs of Transform as training inputs if Transform is used.
+        # examples=transform.outputs['transformed_examples'],
+        # transform_graph=transform.outputs['transform_graph'],
+        schema=schema_gen.outputs["schema"],
+        train_args=train_args,
+        eval_args=eval_args,
+    )
+    # TODO(step 4): Uncomment here to add Trainer to the pipeline.
+    # components.append(trainer)
 
-  # Get the latest blessed model for model validation.
-  model_resolver = resolver.Resolver(
-      strategy_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
-      model=Channel(type=Model),
-      model_blessing=Channel(
-          type=ModelBlessing)).with_id('latest_blessed_model_resolver')
-  # TODO(step 5): Uncomment here to add Resolver to the pipeline.
-  # components.append(model_resolver)
+    # Get the latest blessed model for model validation.
+    model_resolver = resolver.Resolver(
+        strategy_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
+        model=Channel(type=Model),
+        model_blessing=Channel(type=ModelBlessing),
+    ).with_id("latest_blessed_model_resolver")
+    # TODO(step 5): Uncomment here to add Resolver to the pipeline.
+    # components.append(model_resolver)
 
-  # Uses TFMA to compute a evaluation statistics over features of a model and
-  # perform quality validation of a candidate model (compared to a baseline).
-  eval_config = tfma.EvalConfig(
-      model_specs=[tfma.ModelSpec(label_key=features.LABEL_KEY)],
-      slicing_specs=[tfma.SlicingSpec()],
-      metrics_specs=[
-          tfma.MetricsSpec(metrics=[
-              tfma.MetricConfig(
-                  class_name='SparseCategoricalAccuracy',
-                  threshold=tfma.MetricThreshold(
-                      value_threshold=tfma.GenericValueThreshold(
-                          lower_bound={'value': eval_accuracy_threshold}),
-                      change_threshold=tfma.GenericChangeThreshold(
-                          direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-                          absolute={'value': -1e-10})))
-          ])
-      ])
-  evaluator = Evaluator(  # pylint: disable=unused-variable
-      examples=example_gen.outputs['examples'],
-      model=trainer.outputs['model'],
-      baseline_model=model_resolver.outputs['model'],
-      # Change threshold will be ignored if there is no baseline (first run).
-      eval_config=eval_config)
-  # TODO(step 5): Uncomment here to add Evaluator to the pipeline.
-  # components.append(evaluator)
+    # Uses TFMA to compute a evaluation statistics over features of a model and
+    # perform quality validation of a candidate model (compared to a baseline).
+    eval_config = tfma.EvalConfig(
+        model_specs=[tfma.ModelSpec(label_key=features.LABEL_KEY)],
+        slicing_specs=[tfma.SlicingSpec()],
+        metrics_specs=[
+            tfma.MetricsSpec(
+                metrics=[
+                    tfma.MetricConfig(
+                        class_name="SparseCategoricalAccuracy",
+                        threshold=tfma.MetricThreshold(
+                            value_threshold=tfma.GenericValueThreshold(
+                                lower_bound={"value": eval_accuracy_threshold}
+                            ),
+                            change_threshold=tfma.GenericChangeThreshold(
+                                direction=tfma.MetricDirection.HIGHER_IS_BETTER,
+                                absolute={"value": -1e-10},
+                            ),
+                        ),
+                    )
+                ]
+            )
+        ],
+    )
+    evaluator = Evaluator(  # pylint: disable=unused-variable
+        examples=example_gen.outputs["examples"],
+        model=trainer.outputs["model"],
+        baseline_model=model_resolver.outputs["model"],
+        # Change threshold will be ignored if there is no baseline (first run).
+        eval_config=eval_config,
+    )
+    # TODO(step 5): Uncomment here to add Evaluator to the pipeline.
+    # components.append(evaluator)
 
-  # Pushes the model to a file destination if check passed.
-  pusher = Pusher(  # pylint: disable=unused-variable
-      model=trainer.outputs['model'],
-      model_blessing=evaluator.outputs['blessing'],
-      push_destination=pusher_pb2.PushDestination(
-          filesystem=pusher_pb2.PushDestination.Filesystem(
-              base_directory=serving_model_dir)))
-  # TODO(step 5): Uncomment here to add Pusher to the pipeline.
-  # components.append(pusher)
+    # Pushes the model to a file destination if check passed.
+    pusher = Pusher(  # pylint: disable=unused-variable
+        model=trainer.outputs["model"],
+        model_blessing=evaluator.outputs["blessing"],
+        push_destination=pusher_pb2.PushDestination(
+            filesystem=pusher_pb2.PushDestination.Filesystem(
+                base_directory=serving_model_dir
+            )
+        ),
+    )
+    # TODO(step 5): Uncomment here to add Pusher to the pipeline.
+    # components.append(pusher)
 
-  return pipeline.Pipeline(
-      pipeline_name=pipeline_name,
-      pipeline_root=pipeline_root,
-      components=components,
-      # Change this value to control caching of execution results. Default value
-      # is `False`.
-      # enable_cache=True,
-      metadata_connection_config=metadata_connection_config,
-      beam_pipeline_args=beam_pipeline_args,
-  )
+    return pipeline.Pipeline(
+        pipeline_name=pipeline_name,
+        pipeline_root=pipeline_root,
+        components=components,
+        # Change this value to control caching of execution results. Default value
+        # is `False`.
+        # enable_cache=True,
+        metadata_connection_config=metadata_connection_config,
+        beam_pipeline_args=beam_pipeline_args,
+    )

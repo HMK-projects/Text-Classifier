@@ -23,11 +23,14 @@ from typing import Text
 
 # TODO(step 3, 4): Define constants for features of the model.
 FEATURE_KEYS = [
-    'culmen_length_mm', 'culmen_depth_mm', 'flipper_length_mm', 'body_mass_g'
+    "culmen_length_mm",
+    "culmen_depth_mm",
+    "flipper_length_mm",
+    "body_mass_g",
 ]
-LABEL_KEY = 'species'
+LABEL_KEY = "species"
 
 
 def transformed_name(key: Text) -> Text:
-  """Generate the name of the transformed feature from original name."""
-  return key + '_xf'
+    """Generate the name of the transformed feature from original name."""
+    return key + "_xf"
