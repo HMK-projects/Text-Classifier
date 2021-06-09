@@ -1,4 +1,6 @@
 tfx==0.30.0
-numpy
-pandas
-jupyter
+numpy==1.19.5
+pandas==1.1.5
+jupyter==1.0.0
+black==21.5b2
+flake8==3.9.2
