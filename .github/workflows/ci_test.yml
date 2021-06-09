@@ -26,3 +26,19 @@ jobs:
           checkName: 'flake8_py3'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  black-test:
+    name: Black
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v1
+          with:
+            python-version: 3.6.9
+            architecture: x64
+      - name: Install black
+        run: pip install black
+      - name: Run black --check .
+        run: black --check .
+      - name: Check failure
+        if: failure()
+        run: exit 1
