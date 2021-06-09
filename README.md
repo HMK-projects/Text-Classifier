@@ -15,7 +15,6 @@ I wanted to create this project as a way to improve my skills in MLOps and build
 <!-- GETTING STARTED -->
 ## Getting Started
 
-
 ### Installation
 
 ### Tutorials
