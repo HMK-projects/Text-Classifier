@@ -12,24 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""TFX penguin model features.
+"""TFX IMDB model features.
 
-Define constants here that are common across all models
-including features names, label and size of vocabulary.
+
 """
 
 from typing import Text
 
-
-# TODO(step 3, 4): Define constants for features of the model.
 FEATURE_KEYS = [
-    "culmen_length_mm",
-    "culmen_depth_mm",
-    "flipper_length_mm",
-    "body_mass_g",
+    "review",
 ]
-LABEL_KEY = "species"
+LABEL_KEY = "sentiment"
 
+# TODO: Define size of vocabulary
 
 def transformed_name(key: Text) -> Text:
     """Generate the name of the transformed feature from original name."""
