@@ -4,3 +4,5 @@ pandas==1.1.5
 jupyter==1.0.0
 black==21.5b2
 flake8==3.9.2
+tensorflow-data-validation
+apache-beam
