@@ -142,3 +142,6 @@ tfx_metadata/
 
 # TFX Pipeline Output
 tfx_pipeline_output/
+
+# Trash
+Text-Classifer/.Trash-0
