@@ -26,9 +26,17 @@ I wanted to create this project as a way to improve my skills in MLOps and build
 
 ### Development
 
-**Note** Dockerfiles must be built
+To develop/maintain code use the following steps to setup your enviroment.
 
-To develop/maintain code use the following command to start up the dev docker container.
+1. To build the docker dev image run the following command
+
+```
+docker-compose up
+```
+
+This command builds the docker image which can then be used to start up the container.
+
+2. Next use the following command to start up the dev docker container.
 
 ```
 docker run --gpus all -it --rm -p 8888:8888 -v $PWD:/text-classifier text-classifier_dev
