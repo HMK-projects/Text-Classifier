@@ -18,9 +18,30 @@ This file defines a template for TFX Transform component.
 """
 
 import tensorflow_transform as tft
+from models import constants
+from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
 from models import features
 
+
+def text_standardization(input_data: Text) -> Text:
+    """Preparing the text for training by filtering out unnecessary text"""
+    lowercase = tf.strings.lower(input_data)
+    stripped_html = tf.strings.regex_replace(lowercase, '<br />', ' ')
+    return tf.strings.regex_replace(stripped_html,
+                                   '[%s]' % re.escape(string.punctuation),
+                                   '')
+
+def transform(text, sequence_length=SEQ_LEN):
+    """ standardize and tokenize text """
+    vectorize_layer = TextVectorization(
+        standardize=text_standardization,
+        max_tokens=constants.MAX_FEATURES,
+        output_mode='int',
+        output_sequence_length=constants.SEQUENCE_LENGTH
+    )
+
+    return vectorize_layer
 
 # TFX Transform will call this function.
 # TODO(step 3): Define your transform logic in this function.
@@ -35,13 +56,9 @@ def preprocessing_fn(inputs):
     """
     outputs = {}
 
-    # This function is the entry point for your feature engineering with
-    # TensorFlow Transform, using the TFX Transform component.  In this example
-    # the feature engineering is very simple, only applying z-score scaling.
-    for key in features.FEATURE_KEYS:
-        outputs[features.transformed_name(key)] = tft.scale_to_z_score(
-            inputs[key]
-        )
+    text = inputs[features.FEATURE_KEYS]
+    text_transformed = transform(text)
+    outputs[features.transformed_name(features.FEATURE_KEYS)] = text_transformed
 
     # Do not apply label transformation as it will result in wrong evaluation.
     outputs[features.transformed_name(features.LABEL_KEY)] = inputs[
