@@ -16,10 +16,13 @@
 
 This file defines a template for TFX Transform component.
 """
+from typing import Text
+import re
+import string
 
+import tensorflow as tf
 import tensorflow_transform as tft
 from models import constants
-from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
 from models import features
 
@@ -32,7 +35,7 @@ def text_standardization(input_data: Text) -> Text:
                                    '[%s]' % re.escape(string.punctuation),
                                    '')
 
-def transform(text, sequence_length=SEQ_LEN):
+def transform(text, sequence_length=constants.SEQUENCE_LENGTH):
     """ standardize and tokenize text """
     vectorize_layer = TextVectorization(
         standardize=text_standardization,
@@ -56,9 +59,12 @@ def preprocessing_fn(inputs):
     """
     outputs = {}
 
-    text = inputs[features.FEATURE_KEYS]
-    text_transformed = transform(text)
-    outputs[features.transformed_name(features.FEATURE_KEYS)] = text_transformed
+
+    for key in features.FEATURE_KEYS:
+        # Build a vocabulary for this feature.
+        outputs[features.transformed_name(key)] = tft.compute_and_apply_vocabulary(
+                text_standardization(inputs[key])
+            )
 
     # Do not apply label transformation as it will result in wrong evaluation.
     outputs[features.transformed_name(features.LABEL_KEY)] = inputs[

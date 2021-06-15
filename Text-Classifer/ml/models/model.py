@@ -22,10 +22,12 @@ from typing import List, Text
 from absl import logging
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras import losses
 import tensorflow_transform as tft
 from tensorflow_transform.tf_metadata import schema_utils
 
-from tfx.components.trainer.executor import TrainerFnArgs
+from tfx.components.trainer.fn_args_utils import FnArgs
 from tfx.components.trainer.fn_args_utils import DataAccessor
 from models import constants
 from models import features
@@ -33,6 +35,8 @@ from tfx.utils import io_utils
 from tfx_bsl.tfxio import dataset_options
 
 from tensorflow_metadata.proto.v0 import schema_pb2
+
+from models import constants
 
 
 def _get_serve_tf_examples_fn(model, schema, tf_transform_output):
@@ -99,7 +103,7 @@ def _input_fn(
 
 
 def _build_keras_model(feature_list: List[Text]) -> tf.keras.Model:
-    """Creates a DNN Keras model for classifying penguin data.
+    """Creates a DNN Keras model for classifying IMDB sentiment.
 
     Args:
       feature_list: List of feature names.
@@ -107,23 +111,20 @@ def _build_keras_model(feature_list: List[Text]) -> tf.keras.Model:
     Returns:
       A Keras Model.
     """
-    # The model below is built with Functional API, please refer to
-    # https://www.tensorflow.org/guide/keras/overview for all API options.
-    inputs = [keras.layers.Input(shape=(1,), name=f) for f in feature_list]
-    d = keras.layers.concatenate(inputs)
-    for _ in range(constants.NUM_LAYERS):
-        d = keras.layers.Dense(
-            constants.HIDDEN_LAYER_UNITS, activation="relu"
-        )(d)
-    outputs = keras.layers.Dense(
-        constants.OUTPUT_LAYER_UNITS, activation="softmax"
-    )(d)
+    
+    model = tf.keras.Sequential([
+        layers.Embedding(constants.MAX_FEATURES + 1, constants.EMBEDDING_DIM),
+        layers.Dropout(0.2),
+        layers.GlobalAveragePooling1D(),
+        layers.Dropout(0.2),
+        layers.Dense(1)
+    ])
+    model.summary()
 
-    model = keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
-        optimizer=keras.optimizers.Adam(constants.LEARNING_RATE),
-        loss="sparse_categorical_crossentropy",
-        metrics=[keras.metrics.SparseCategoricalAccuracy()],
+        optimizer='adam',
+        loss=losses.BinaryCrossentropy(from_logits=True),
+        metrics=tf.metrics.BinaryAccuracy(threshold=0.0),
     )
 
     model.summary(print_fn=logging.info)
@@ -131,8 +132,7 @@ def _build_keras_model(feature_list: List[Text]) -> tf.keras.Model:
 
 
 # TFX Trainer will call this function.
-# TODO(step 4): Construct, train and save your model in this function.
-def run_fn(fn_args: TrainerFnArgs):
+def run_fn(fn_args: FnArgs):
     """Train the model based on given args.
 
     Args:
