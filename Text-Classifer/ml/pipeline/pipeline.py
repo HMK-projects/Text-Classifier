@@ -32,7 +32,6 @@ from tfx.components import Trainer
 from tfx.components import Transform
 from tfx.dsl.components.common import resolver
 from tfx.dsl.experimental import latest_blessed_model_resolver
-from models import features
 from tfx.orchestration import pipeline
 from tfx.proto import pusher_pb2
 from tfx.proto import trainer_pb2
@@ -40,6 +39,8 @@ from tfx.types import Channel
 from tfx.types.standard_artifacts import Model
 from tfx.types.standard_artifacts import ModelBlessing
 from ml_metadata.proto import metadata_store_pb2
+
+from models import features
 
 
 def create_pipeline(
@@ -89,8 +90,7 @@ def create_pipeline(
         schema=schema_gen.outputs["schema"],
         preprocessing_fn=preprocessing_fn,
     )
-    # TODO(step 3): Uncomment here to add Transform to the pipeline.
-    # components.append(transform)
+    components.append(transform)
 
     # Uses user-provided Python function that implements a model using Tensorflow.
     trainer = Trainer(
@@ -103,8 +103,7 @@ def create_pipeline(
         train_args=train_args,
         eval_args=eval_args,
     )
-    # TODO(step 4): Uncomment here to add Trainer to the pipeline.
-    # components.append(trainer)
+    components.append(trainer)
 
     # Get the latest blessed model for model validation.
     model_resolver = resolver.Resolver(
