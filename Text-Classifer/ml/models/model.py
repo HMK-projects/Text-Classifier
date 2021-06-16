@@ -176,6 +176,9 @@ def run_fn(fn_args: FnArgs):
         batch_size=eval_batch_size,
     )
 
+    # DEBUGGING
+    print(train_dataset)
+
     with mirrored_strategy.scope():
         model = _build_keras_model(feature_list)
 
@@ -189,7 +192,7 @@ def run_fn(fn_args: FnArgs):
         steps_per_epoch=fn_args.train_steps,
         validation_data=eval_dataset,
         validation_steps=fn_args.eval_steps,
-        callbacks=[tensorboard_callback],
+        # callbacks=[tensorboard_callback],
     )
 
     signatures = {

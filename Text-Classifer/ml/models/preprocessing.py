@@ -35,19 +35,7 @@ def text_standardization(input_data: Text) -> Text:
                                    '[%s]' % re.escape(string.punctuation),
                                    '')
 
-def transform(text, sequence_length=constants.SEQUENCE_LENGTH):
-    """ standardize and tokenize text """
-    vectorize_layer = TextVectorization(
-        standardize=text_standardization,
-        max_tokens=constants.MAX_FEATURES,
-        output_mode='int',
-        output_sequence_length=constants.SEQUENCE_LENGTH
-    )
-
-    return vectorize_layer
-
 # TFX Transform will call this function.
-# TODO(step 3): Define your transform logic in this function.
 def preprocessing_fn(inputs):
     """tf.transform's callback function for preprocessing inputs.
 
@@ -65,6 +53,7 @@ def preprocessing_fn(inputs):
         outputs[features.transformed_name(key)] = tft.compute_and_apply_vocabulary(
                 text_standardization(inputs[key])
             )
+        print('outputs:', outputs[features.transformed_name(key)])
 
     # Do not apply label transformation as it will result in wrong evaluation.
     outputs[features.transformed_name(features.LABEL_KEY)] = inputs[
