@@ -42,12 +42,25 @@ This command builds the docker image which can then be used to start up the cont
 docker run --gpus all -it --rm -p 8888:8888 -v $PWD:/text-classifier text-classifier_dev
 ```
 
+#### Jupyter Notebook
+
 Once the container is up and running use the following code to launch jupyter notebooks.
 
 ```
 jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
 ```
 
+#### Building TFX Pipeline Locally
+
+Run the following commands the your pipeline directory `(ml/)`:
+
+```
+tfx pipeline create --pipeline_path local_runner.py
+```
+and
+```
+tfx run create --pipeline_name Text-Classifier
+```
 <!-- ROADMAP -->
 
 <!-- CONTACT -->

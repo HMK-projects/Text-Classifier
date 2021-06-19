@@ -103,7 +103,7 @@ def create_pipeline(
         train_args=train_args,
         eval_args=eval_args,
     )
-    components.append(trainer)
+    # components.append(trainer)
 
     # Get the latest blessed model for model validation.
     model_resolver = resolver.Resolver(
