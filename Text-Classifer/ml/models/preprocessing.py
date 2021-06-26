@@ -21,6 +21,8 @@ import string
 
 import tensorflow as tf
 import tensorflow_transform as tft
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from models import constants
 
 from models import features
@@ -28,18 +30,18 @@ from models import features
 
 def text_standardization(reviews, sequence_length=constants.SEQUENCE_LENGTH):
     """Preparing the text for training by filtering out unnecessary text"""
-    lowercase = tf.strings.lower(reviews)
-    reviews = tf.strings.regex_replace(lowercase, r" '| '|^'|'$", " ")
-    reviews = tf.strings.regex_replace(reviews, "[^a-z' ]", " ")
-    tokens = tf.strings.split(reviews)[:, :sequence_length]
-    start_tokens = tf.fill([tf.shape(reviews)[0], 1], "<START>")
-    end_tokens = tf.fill([tf.shape(reviews)[0], 1], "<END>")
-    tokens = tf.concat([start_tokens, tokens, end_tokens], axis=1)
-    tokens = tokens[:, :sequence_length]
-    tokens = tokens.to_tensor(default_value="<PAD>")
-    pad = sequence_length - tf.shape(tokens)[1]
-    tokens = tf.pad(tokens, [[0, 0], [0, pad]], constant_values="<PAD>")
-    return tf.reshape(tokens, [-1, sequence_length])
+    # lowercase = tf.strings.lower(reviews)
+    # sentences = tf.strings.regex_replace(lowercase, r" '| '|^'|'$", " ")
+    # sentences = tf.strings.regex_replace(sentences, "[^a-z' ]", " ")
+    
+    tokenizer = Tokenizer(num_words=constants.VOCAB_SIZE, oov_token="<OOV>")
+    tokenizer.fit_on_texts(reviews)
+    word_index = tokenizer.word_index
+
+    sequences = tokenizer.texts_to_sequences(sentences)
+    padded = pad_sequences(sequences, padding='post')
+
+    return padded
 
 # TFX Transform will call this function.
 def preprocessing_fn(inputs):
@@ -57,7 +59,7 @@ def preprocessing_fn(inputs):
 
     for key in features.FEATURE_KEYS:
         # Get the tokens for the dataset
-        tokens = text_standardization(_fill_in_missing(inputs[key], ''))
+        tokens = text_standardization(inputs[key])
         # Build a vocabulary for this feature.
         outputs[features.transformed_name(key)] = tft.compute_and_apply_vocabulary(
                 tokens,
