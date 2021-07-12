@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""TFX penguin preprocessing.
+"""TFX IMDB preprocessing.
 
 This file defines a template for TFX Transform component.
 """
